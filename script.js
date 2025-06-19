@@ -1,5 +1,6 @@
 let localData;
-let tasks;
+let tasks; //stored as reversed, and later filtered
+let fTasks;
 let lastId;
 let taskForm = document.getElementById("taskForm");
 let addTaskButton = document.getElementById("addTaskBtn");
@@ -12,23 +13,17 @@ if (!localStorage.getItem("fetchedOnce")) {
             localStorage.setItem("fetchedOnce", "true")
         );
 }
-    fetchLocal();
-    // console.table(tasks); //just logs
+let selectedValue = document.querySelector('input[name="filter"]:checked').value;
+fetchLocal()
+taskListItems();
 
-    // filtering
-    document.querySelectorAll('input[name="filter"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            const selectedValue = document.querySelector('input[name="filter"]:checked').value;
-            runFilter(selectedValue);
-        });
+document.querySelectorAll('input[name="filter"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+        selectedValue = document.querySelector('input[name="filter"]:checked').value;
+        taskListItems();
     });
-    
+})
 
-    tasks.reverse().forEach(task => { //reversing to list added task on top
-        taskListItem(task)
-    });
-
-  
 taskForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -37,8 +32,6 @@ taskForm.addEventListener("submit", (e) => {
         return;
     }
     addTaskToLocal();
-    location.reload();
-
     taskInput.value = null; // clearing input field
 });
 
@@ -46,9 +39,13 @@ clearAllBtn.addEventListener("click", () => {
     let result = confirm("Are you Sure...?");
     if (result) {
         localStorage.removeItem("tasks");
-        localStorage.removeItem("lastUsedId")
+        localStorage.removeItem("lastUsedId");
+        localData = {}
         tasks = [];
-        location.reload();
+        fTasks = [];
+        taskList.innerHTML = "";
+
+        // location.reload();
     }
 })
 
@@ -56,41 +53,51 @@ clearAllBtn.addEventListener("click", () => {
 // functions
 
 function fetchLocal() {
-    localData = localStorage.getItem("tasks");
-    tasks = localData ? JSON.parse(localData) : []; 
+    localData = localStorage.getItem("tasks"); //unparsed JSON data
+    tasks = localData ? JSON.parse(localData).reverse() : []; 
     lastId = localStorage.getItem("lastUsedId");
+
+    fTasks = runFilter(selectedValue);
+    // console.log("localdata json = ", localData);
+    // console.log('tasks = ', tasks);
+    // console.log('fTasks = ', fTasks);
 }
 
-function taskListItem(task) {
+function taskListItems() {
+    fetchLocal()
+    taskList.innerHTML = "";
+    fTasks.forEach(task => {
+        const taskItem = document.createElement("li");
+        taskItem.classList.add("taskItem");
 
-    const taskItem = document.createElement("li");
-    taskItem.classList.add("taskItem");
+        taskItem.innerHTML = `
+            <span class="task-title">${task.title}</span>
+            <div class="cmplt-dlt-container">
+                <div class="complete-btn">✔</div>
+                <button class="delete-btn">X</button>
+            </div>
+        `;
 
-    taskItem.innerHTML = `
-		<span class="task-title">${task.title}</span>
-		<div class="cmplt-dlt-container">
-			<div class="complete-btn">✔</div>
-			<button class="delete-btn">X</button>
-		</div>
-	`;
+        const completeBtn = taskItem.querySelector(".complete-btn");
+        const deleteBtn = taskItem.querySelector(".delete-btn");
 
-    const completeBtn = taskItem.querySelector(".complete-btn");
-    const deleteBtn = taskItem.querySelector(".delete-btn");
+        task.completed ? completeBtn.classList.add("completed") : ""
+        taskItem.addEventListener("click", () => {
+            task.completed = !task.completed;
+            updateLocal(task);
+            console.table(tasks);
+            completeBtn.classList.toggle("completed");
+        });
 
-    task.completed ? completeBtn.classList.add("completed") : ""
-    completeBtn.addEventListener("click", () => {
-        task.completed = !task.completed;
-        updateLocal(task);
-        console.table(tasks);
-        completeBtn.classList.toggle("completed");
-    });
+        deleteBtn.addEventListener("click", () => {
+            updateLocal(task.id, "remove");
+            taskItem.remove();
+        });
 
-    deleteBtn.addEventListener("click", () => {
-        updateLocal(task.id, "remove");
-        taskItem.remove();
-    });
-
-    taskList.appendChild(taskItem);
+        taskList.appendChild(taskItem);
+    })
+    if (taskList.innerHTML === "") taskList.style.display = "none";
+    else taskList.style.display = "block";
 }
 
 function addTaskToLocal() {
@@ -102,36 +109,41 @@ function addTaskToLocal() {
     };
 
     localStorage.setItem("tasks",JSON.stringify([
-        ...(localData ? JSON.parse(localData) : []),
+        ...(JSON.parse(localStorage.getItem("tasks") || "[]")),
         task
     ]))
-    localStorage.setItem("lastUsedId", task.id)
+    localStorage.setItem("lastUsedId", task.id);
+    document.getElementById("radioBtnAll").checked = true
+    taskListItems()
 }
 
-function updateLocal(taskId, update = "update") { //small changes can create editable tasks,with this function- todo-+++
+function updateLocal(taskId, update = "update") { //small changes can create editable tasks,with this function. 
     if (update === "remove") {
-        tasks = tasks.filter(task => task.id !== taskId)
-        localStorage.setItem("tasks", JSON.stringify(tasks.reverse())) //undoing the reversing
-    } else
-        localStorage.setItem("tasks", JSON.stringify(tasks.reverse())) //undoing the reverse
-}
-
-function runFilter(value) {
-    if (value === "completed") {
-        newTasks = tasks.filter(task => task.completed);
-    } else if (value === "pending") {
-        newTasks = tasks.filter( task => !task.completed);
+        tasks = tasks.filter(task => task.id !== taskId) 
+        localStorage.setItem("tasks", JSON.stringify([...tasks].reverse())); //its unrever
     } else {
-        newTasks = tasks;
+        localStorage.setItem("tasks", JSON.stringify([...tasks].reverse()));
     }
 
-    taskList.innerHTML = ""
-    newTasks.forEach(task => {
-        taskListItem(task);
-    });
+    // taskListItems()   //if used this , completed tasks get removed from pending instatly, and vice versa
+    //currently it will stay until refresh/filter-change
 }
 
-async function fetchTypicodeTodos() { // using localhost, this api only loads one time in a browser
+function runFilter(selectedValue) {
+    let newTasks = tasks; //just for safety, if any chance to not change tasks accidently
+    let filteredTask;
+    if (selectedValue === "completed") {
+        filteredTask = newTasks.filter(task => task.completed);
+    } else if (selectedValue === "pending") {
+        filteredTask = newTasks.filter(task => !task.completed);
+    } else {
+        filteredTask = newTasks;
+    }
+
+    return filteredTask;
+}
+
+async function fetchTypicodeTodos() { // this api funtion only loads one time in a browser
     try {
         const res = await fetch("https://jsonplaceholder.typicode.com/todos?_limit=10");
         const data = await res.json();
@@ -144,7 +156,7 @@ async function fetchTypicodeTodos() { // using localhost, this api only loads on
 
         tasks = converted;
         localStorage.setItem("tasks", JSON.stringify(tasks));
-        tasks.forEach(task => taskListItem(task));
+        taskListItems(tasks);
     } catch (err) {
         console.error("Failed to fetch from Typicode:", err);
     }
