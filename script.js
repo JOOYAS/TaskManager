@@ -8,20 +8,16 @@ let taskInput = document.getElementById("taskInput");
 let taskList = document.getElementById("taskList");
 let clearAllBtn = document.getElementById("clearAllBtn")
 
-if (!localStorage.getItem("fetchedOnce")) {
+if (!localStorage.getItem("fetchedOnce")) {  // dummy api runs once
         fetchTypicodeTodos().then(() => 
             localStorage.setItem("fetchedOnce", "true")
         );
 }
-let selectedValue = document.querySelector('input[name="filter"]:checked').value;
-fetchLocal()
+
 taskListItems();
 
 document.querySelectorAll('input[name="filter"]').forEach(radio => {
-    radio.addEventListener('change', () => {
-        selectedValue = document.querySelector('input[name="filter"]:checked').value;
-        taskListItems();
-    });
+    radio.addEventListener('change', () => taskListItems())
 })
 
 taskForm.addEventListener("submit", (e) => {
@@ -57,7 +53,9 @@ function fetchLocal() {
     tasks = localData ? JSON.parse(localData).reverse() : []; 
     lastId = localStorage.getItem("lastUsedId");
 
+    selectedValue = document.querySelector('input[name="filter"]:checked').value;
     fTasks = runFilter(selectedValue);
+    // console.log('selectedValue = ', selectedValue);
     // console.log("localdata json = ", localData);
     // console.log('tasks = ', tasks);
     // console.log('fTasks = ', fTasks);
@@ -101,6 +99,7 @@ function taskListItems() {
 }
 
 function addTaskToLocal() {
+    fetchLocal();
     let task = {
         userId: "007",
         id: lastId ? Number(lastId) + 1 : 1,
@@ -113,7 +112,8 @@ function addTaskToLocal() {
         task
     ]))
     localStorage.setItem("lastUsedId", task.id);
-    document.getElementById("radioBtnAll").checked = true
+    document.getElementById("radioBtnAll").checked = true;
+
     taskListItems()
 }
 
