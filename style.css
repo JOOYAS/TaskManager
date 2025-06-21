@@ -3,12 +3,14 @@
     padding: 0;
     box-sizing: border-box;
 }
-
+html,
 body {
+    overflow-x: hidden;
+    }
+    
+    body {
     font-family: fantasy;
-        overflow-x: hidden;
-        background-color: #1b6b50;
-        padding: 1rem;
+    background-color: #1b6b50;
     text-align: center;
     color: white;
 }
@@ -17,31 +19,10 @@ main {
     margin-inline: auto;
     width: 50%;
 }
-@media (max-width: 768px) {
-    main {
-        width: 75%;
-    }
-}
-
-@media (max-width: 480px) {
-    main {
-            width: auto;
-            font-size: 0.9rem;
-            padding-block: 0;
-            }
-            
-            h1 {
-                padding-block: 1rem;
-    }
-
-    .taskItem {
-        font-size: small;
-    }
-}
 
 h1 {
     text-align: center;
-    padding-bottom: 2rem;
+    padding-block: 2rem;
 }
 hr {
     margin: 1rem;
@@ -57,12 +38,14 @@ form {
 #taskInput {
     width: 90%;
     padding: 8px;
+    padding-right: 25px;
     color: white;
     padding-left: 12px;
     background: rgba(255, 112, 112, 0.5);
     text-align: center;
     font:bold 18px sans-serif;
     border:4px solid white;
+    border-right: 0;
     border-radius: 50px 0 0 50px;
 
     &:focus {
@@ -89,11 +72,13 @@ form {
 #taskList {
     background-color: rgba(255,255,255,0.1);
     padding: 1rem;
+    margin-bottom: 2rem;
     border-radius: 20px;
 }
 
 .taskItem {
-    font-weight: bolder;
+    width: 100%;
+        font-weight: bold;
     font-size: large;
     list-style-type: none;
     border-radius: 14px;
@@ -101,15 +86,29 @@ form {
     justify-content: space-between;
     align-items: center;
     transition: 300ms;
-    padding: 1rem;
+    padding: .5rem;
 }
 
 .taskItem:hover {
     background-color: rgba(255, 255, 255, 0.358);
 }
 
-.cmplt-dlt-container {
+.check-text-container {
+    flex: 1;
+    min-width: 0;
     display: flex;
+    gap: .5rem;
+        align-items: center;
+    }
+    
+    .task-title {
+        flex: 1;
+        min-width: 0;
+        box-sizing: border-box;
+        text-align: left;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
 }
 
 .complete-btn {
@@ -118,32 +117,26 @@ form {
     width: 30px;
     height: 30px;
     border-radius: 8px;
-
 }
 
 .delete-btn {
-    margin-right: -20px;
-    border-radius: 50%;
+    border-radius: 50px;
     background-color: crimson;
-    width: 30px;
-    height: 30px;
+    width: 35px;
+        height: 35px;
     opacity: 0;
     visibility: hidden;
-    transform: translateX(55px);
     transition:
         opacity 300ms ease,
-        transform 300ms ease,
         visibility 0s 300ms;
 }
 
 .taskItem:hover .delete-btn {
     opacity: 1;
     visibility: visible;
-    transform: translateX(10px);
     transition:
         opacity 300ms ease,
-        transform 300ms ease,
-        visibility 0s 0s;
+        visibility 0s;
 }
 
 .completed {
@@ -159,31 +152,32 @@ form {
     margin-top: 1rem;
     user-select: none;
 }
+
 #filters span {
     cursor: pointer;
-        border-width: 4px;
-        color: #7a7a7a;
-            transform: 3000ms;
+    color: #7a7a7a;
     display: inline-block;
     padding: 0.5rem 1rem;
     border: 4px dotted white;
     border-radius: 50px;
     background: #ddd;
     font-weight: bold;
+    transition: background 300ms, color 300ms, transform 300ms, border 300ms, padding 300ms;
 }
 
 #filters input:checked+span {
+    padding-inline: 2rem;
     background: #2bb185;
     color: white;
     border: 4px solid white;
 }
 
 .clear-btn {
-    position: fixed;
-    bottom: 1rem;
     right: 1rem;
+        bottom: 1rem;
+    position: fixed;
     padding: 0.6rem 1rem;
-    background: crimson;
+    background: rgb(220, 20, 60);
     color: white;
     border: none;
     border-radius: 50px;
@@ -193,12 +187,44 @@ form {
 }
 
 @keyframes shake {
-
     50% {
-        transform: scale(1.1);
+            background-color: rgba(220, 20, 60, .5);
     }
 }
 
 .clear-btn:hover {
     animation: shake 2s infinite;
+}
+@media (max-width: 768px) {
+    main {
+        width: 75%;
+    }
+}
+
+@media (max-width: 480px) {
+    main {
+        width: auto;
+        font-size: 0.9rem;
+        padding-block: 0;
+        padding-inline: .5rem;
+    }
+
+    h1 {
+        padding-bottom: 0;
+    }
+
+    #taskList {
+        background: none;
+    }
+
+    .taskItem {
+        font-size: medium;
+    }
+
+    .clear-btn {
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 16px 16px 0 0;
+        bottom: -8px;
+    }
 }

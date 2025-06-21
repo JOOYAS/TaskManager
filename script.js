@@ -41,7 +41,7 @@ clearAllBtn.addEventListener("click", () => {
         fTasks = [];
         taskList.innerHTML = "";
 
-        // location.reload();
+        taskListItems();
     }
 })
 
@@ -69,11 +69,12 @@ function taskListItems() {
         taskItem.classList.add("taskItem");
 
         taskItem.innerHTML = `
-            <span class="task-title">${task.title}</span>
-            <div class="cmplt-dlt-container">
+            <div class="check-text-container">
                 <div class="complete-btn">✔</div>
-                <button class="delete-btn">X</button>
+                <p class="task-title">${task.title}</p>
             </div>
+            
+            <button class="delete-btn">✖</button>
         `;
 
         const completeBtn = taskItem.querySelector(".complete-btn");
