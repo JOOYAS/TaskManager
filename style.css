@@ -146,34 +146,28 @@ form {
     border-radius: 50px;
     background-color: crimson;
     width: 30px;
-        height: 30px;
+    height: 30px;
         display: none;
-        transition: all 300ms;
+    pointer-events: none;
     }
     
-    .delete-btn:hover
-    {
+.delete-btn:hover
+{
         transition: all 300ms;
         transform: scale(1.2);
-    }
-    
-    .delete-btn:active
-    {
-        transition: all 300ms;
-        transform: scale(.8);
 }
-
 .taskItem:hover .delete-btn {
     display: block;
     transition:
         opacity 300ms ease,
         display 0s;
+    pointer-events: auto;
 }
 
 .completed {
-  background-color:dodgerblue;
-color: black;
-  border: 2px solid white;
+    background-color: dodgerblue;
+        color: black;
+        border: 2px solid white;
 }
 
 /* toggles */
