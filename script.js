@@ -121,7 +121,7 @@ function addTaskToLocal() {
 function updateLocal(taskId, update = "update") { //small changes can create editable tasks,with this function. 
     if (update === "remove") {
         tasks = tasks.filter(task => task.id !== taskId) 
-        localStorage.setItem("tasks", JSON.stringify([...tasks].reverse())); //its unrever
+        localStorage.setItem("tasks", JSON.stringify([...tasks].reverse())); //its unreversing
     } else {
         localStorage.setItem("tasks", JSON.stringify([...tasks].reverse()));
     }
